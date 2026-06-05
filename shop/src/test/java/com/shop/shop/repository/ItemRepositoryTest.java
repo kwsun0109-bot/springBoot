@@ -178,6 +178,7 @@ class ItemRepositoryTest {
         booleanBuilder.and(item.itemDetail.like("%" + itemDetail + "%"));
         booleanBuilder.and(item.price.gt(price));
 
+// 문제가 있었음.(String itemSellStat = "SELL"; <-- 코드는 무조건 SELL 임.비교대상이 아님.
         booleanBuilder.and(item.itemSellStatus.eq(ItemSellStatus.SELL));
 
         Pageable pageable = PageRequest.of(0, 5);
@@ -189,6 +190,8 @@ class ItemRepositoryTest {
             System.out.println(resultItem.toString());
         }
     }
+    // 서버 사이드 템플릿 엔진으로는 Thymeleaf, JSP, Freemarker, Groovy, Mustache등이 있음
+    // Thymeleaf의 확장자명은 .html이며, 문법은 html태그 안쪽에 속성으로 사용됨
 
 
 
