@@ -2,7 +2,6 @@ package com.shop.shop.entity;
 
 import com.shop.shop.constant.ItemSellStatus;
 import jakarta.persistence.*;
-import lombok.Generated;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -38,4 +37,5 @@ public class Item {
 
     private LocalDateTime regTime;          // 등록시간
     private LocalDateTime updateTime;       // 수정시간
+
 }

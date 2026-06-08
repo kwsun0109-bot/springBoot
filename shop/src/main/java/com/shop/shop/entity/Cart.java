@@ -19,7 +19,7 @@ public class Cart {
 
     private Long id;
     // 일대일로 매핑 member 엔티티와  (fetch = FetchType.EAGER) 즉시로딩
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
 
     private Member member;
