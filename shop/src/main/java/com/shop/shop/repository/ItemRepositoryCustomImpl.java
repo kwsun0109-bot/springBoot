@@ -1,0 +1,90 @@
+package com.shop.shop.repository;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.shop.shop.constant.ItemSellStatus;
+import com.shop.shop.dto.ItemSearchDto;
+import com.shop.shop.entity.Item;
+import com.shop.shop.entity.QItem;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.thymeleaf.util.StringUtils;
+
+import jakarta.persistence.EntityManager;
+import java.time.LocalDateTime;
+import java.util.List;
+
+public class ItemRepositoryCustomImpl implements ItemRepositoryCustom {
+
+    private final JPAQueryFactory queryFactory;
+
+    public ItemRepositoryCustomImpl(EntityManager em) {
+        this.queryFactory = new JPAQueryFactory(em);
+    }
+
+    private BooleanExpression searchSellStatusEq(ItemSellStatus searchSellStatus) {
+        return searchSellStatus == null ? null : QItem.item.itemSellStatus.eq(searchSellStatus);
+    }
+
+    private BooleanExpression regDtsAfter(String searchDateType) {
+        LocalDateTime dateTime = LocalDateTime.now();
+
+        if (StringUtils.equals("all", searchDateType) || "all".equals(searchDateType)) {
+            return null;
+        } else if (StringUtils.equals("1d", searchDateType)) {
+            dateTime = dateTime.minusDays(1);
+        } else if (StringUtils.equals("1w", searchDateType)) {
+            dateTime = dateTime.minusWeeks(1);
+        } else if (StringUtils.equals("1m", searchDateType)) {
+            dateTime = dateTime.minusMonths(1);
+        } else if (StringUtils.equals("6m", searchDateType)) {
+            dateTime = dateTime.minusMonths(6);
+        }
+        return QItem.item.regTime.after(dateTime);
+    }
+
+    private BooleanExpression searchByLike(String searchBy, String searchQuery) {
+        if (StringUtils.equals("itemNm", searchBy)) {
+            return QItem.item.itemNm.like("%" + searchQuery + "%");
+        } else if (StringUtils.equals("createdBy", searchBy)) {
+            // 혹시 아직도 QItem에 createdBy 빌드가 안 풀렸다면 아래 return 줄을 주석처리하고 그 밑의 'return null;' 주석을 푸세요!
+            //return QItem.item.createdBy.like("%" + searchQuery + "%");
+            return null;
+        }
+        return null;
+    }
+
+    @Override
+    public Page<Item> getAdminItemPage(ItemSearchDto itemSearchDto, Pageable pageable) {
+
+        List<Item> content = queryFactory
+                .selectFrom(QItem.item)
+                .where(regDtsAfter(itemSearchDto.getSearchDateType()),
+                        searchSellStatusEq(itemSearchDto.getSearchSellStatus()),
+                        searchByLike(itemSearchDto.getSearchBy(),
+                                itemSearchDto.getSearchQuery()))
+                .orderBy(QItem.item.id.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        Long total = queryFactory
+                .select(QItem.item.count())
+                .from(QItem.item)
+                .where(regDtsAfter(itemSearchDto.getSearchDateType()),
+                        searchSellStatusEq(itemSearchDto.getSearchSellStatus()),
+                        searchByLike(itemSearchDto.getSearchBy(),
+                                itemSearchDto.getSearchQuery()))
+                .fetchOne();
+
+        return new PageImpl<>(content, pageable, total == null ? 0L : total);
+    }
+
+    private BooleanExpression itemNmLike(String searchQuery) {
+        return StringUtils.isEmpty(searchQuery) ? null : QItem.item.itemNm.like("%" + searchQuery + "%");
+    }
+}
+
+
+
+

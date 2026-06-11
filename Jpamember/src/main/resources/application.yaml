@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: jpamember
+  datasource:
+    url: jdbc:mysql://localhost:3306/memberdb?serverTimezone=Asia/Seoul
+    username: test
+    password: 1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:              # table 자체를 생성
+    hibernate:
+      ddl-auto: update  # table을 생성 <-- create 이면 : 주의 데이터가 있으면 날라감.....
+    show-sql: true  # table 생성 과정을 보여줌
+    properties:
+      hibernate:
+        format_sql: true
+
+server:
+  port: 8080
+
+
